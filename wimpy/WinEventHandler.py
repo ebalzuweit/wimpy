@@ -51,7 +51,7 @@ class WinEventHandler(object):
             self.WinEventProc,
             0,
             0,
-            win32con.WINEVENT_OUTOFCONTEXT)
+            win32con.WINEVENT_OUTOFCONTEXT | win32con.WINEVENT_SKIPOWNPROCESS)
         if hook == 0: raise RuntimeError("Failed to set hook!")
 
         # message loop

@@ -16,24 +16,32 @@ class WindowManager(object):
         logging.info(f"Using strategy '{type(strategy).__name__}'.")
         self.strategy = strategy        
         self.MESSAGE_MAP = {
-            win32con.EVENT_OBJECT_CREATE: self._update_tracked_windows,
+            win32con.EVENT_OBJECT_CREATE: self._on_object_create,
+            win32con.EVENT_OBJECT_DESTROY: self._on_object_destroy,
+            win32con.EVENT_OBJECT_HIDE: self._on_object_destroy,
+            win32con.EVENT_OBJECT_LOCATIONCHANGE: self._on_location_change,
+            win32con.EVENT_OBJECT_SHOW: self._on_object_create,
             win32con.EVENT_SYSTEM_MOVESIZESTART: self._on_movesize_start,
             win32con.EVENT_SYSTEM_MOVESIZEEND: self._on_movesize_end,
-            win32con.EVENT_SYSTEM_MINIMIZESTART: self._update_tracked_windows,
-            win32con.EVENT_SYSTEM_MINIMIZEEND: self._update_tracked_windows
+            win32con.EVENT_SYSTEM_MINIMIZESTART: self._on_minimize_start,
+            win32con.EVENT_SYSTEM_MINIMIZEEND: self._on_minimize_end
         }
         
         self.displays = []
         self.windows = []
-        self.display_window_map = {}
-        self.tracked_window_handles = []
+        self.tracked_window_handles = set()
         self.movesize_window_handle = None
 
         self._update_tracked_windows(0, 0)
 
     def on_event(self, hWinEventHook, event, hwnd, idObject, idChild, dwEventThread, dwmsEventTime):
+        if hwnd is None:
+            return
+        if idObject != win32con.OBJID_WINDOW:
+            return
+
         func = self.MESSAGE_MAP.get(event)
-        if func is not None and hwnd is not None:
+        if func is not None:
             func(hwnd, dwmsEventTime)
 
     def on_error(self, result, func, args):
@@ -54,6 +62,19 @@ class WindowManager(object):
 
         self._apply_strategy()
 
+    def _start_tracking_window(self, hwnd):
+        self.tracked_window_handles.add(hwnd)
+        self.windows.append(Window(hwnd))
+        self._apply_strategy_to_display_by_window(hwnd)
+
+    def _stop_tracking_window(self, hwnd):
+        display = self._get_display_by_window_handle(hwnd)
+        self.tracked_window_handles.remove(hwnd)
+        self.windows = list(filter(lambda w: w.hwnd != hwnd, self.windows))
+
+        if display is not None:
+            self._apply_strategy_to_display(display)
+
     def _apply_strategy(self):
         for display in self.displays:
             self._apply_strategy_to_display(display)
@@ -64,11 +85,16 @@ class WindowManager(object):
 
         # get windows in display
         display_windows = [w for w in self.windows if display.contains_window(w.hwnd)]
-        self.display_window_map[str(display.hwnd)] = display_windows
 
         # apply strategy
         windows = [w for w in display_windows if w.hwnd != self.movesize_window_handle]
+        logging.debug(f"Applying strategy to {len(windows)} window(s) in display '{display}'.")
         self.strategy.apply(display, windows, win32.GetForegroundWindow())
+
+    def _apply_strategy_to_display_by_window(self, hwnd):
+        display = self._get_display_by_window_handle(hwnd)
+        if display is not None:
+            self._apply_strategy_to_display(display)
 
     def _update_tracked_windows(self, _, dwmsEventTime):
         hwnds = win32.EnumWindows()
@@ -79,17 +105,40 @@ class WindowManager(object):
 
         if len(added) > 0 or len(removed) > 0:
             logging.debug(f"Adding {len(added)} tracked window(s), removing {len(removed)}.")
-            self.tracked_window_handles = window_handles
+            for w in added: self.tracked_window_handles.add(w)
+            for w in removed: self.tracked_window_handles.remove(w)
             self.refresh()
+
+    def _on_object_create(self, hwnd, dwmsEventTime):
+        if not self._should_track_window(hwnd):
+            return
+
+        logging.debug(f"object_create: [{hwnd}]")
+        self._start_tracking_window(hwnd)
+
+    def _on_object_destroy(self, hwnd, dwmsEventTime):
+        if hwnd in self.tracked_window_handles:
+            logging.debug(f"object_destroy: [{hwnd}]")
+            self._stop_tracking_window(hwnd)
+
+    def _on_location_change(self, hwnd, dwmsEventTime):
+        if hwnd == self.movesize_window_handle:
+            return
+
+        window = self._get_tracked_window_by_handle(hwnd)
+        if window is not None:
+            prev_size = window.display_size
+            window.refresh()
+
+            if prev_size != window.display_size:
+                logging.debug(f"location_change: [{hwnd}] {window.pretty_title}")
+                self._apply_strategy_to_display_by_window(hwnd)
 
     def _on_movesize_start(self, hwnd, dwmsEventTime):
         if hwnd in self.tracked_window_handles:
             logging.debug(f"Start moving [{hwnd}]")
             self.movesize_window_handle = hwnd
-
-            display = self._get_display_by_window_handle(hwnd)
-            if display is not None:
-                self._apply_strategy_to_display(display)
+            self._apply_strategy_to_display_by_window(hwnd)
 
     def _on_movesize_end(self, hwnd, dwmsEventTime):
         if hwnd != self.movesize_window_handle:
@@ -97,25 +146,29 @@ class WindowManager(object):
 
         logging.debug(f"Stopped moving [{hwnd}]")
         self.movesize_window_handle = None
+        self._apply_strategy_to_display_by_window(hwnd)
 
-        window = self._get_tracked_window_by_handle(hwnd)
-        if window is not None:
-            window.refresh()
-        else:
-            return # won't find display if window not tracked
+    def _on_minimize_start(self, hwnd, dwmsEventTime):
+        if hwnd in self.tracked_window_handles:
+            logging.debug(f"minimize_start: [{hwnd}]")
+            self._stop_tracking_window(hwnd)
 
-        display = self._get_display_by_window_handle(hwnd)
-        if display is not None:
-            self._apply_strategy_to_display(display)
+    def _on_minimize_end(self, hwnd, dwmsEventTime):
+        if not self._should_track_window(hwnd):
+            return
+
+        if hwnd not in self.tracked_window_handles:
+            logging.debug(f"minimize_end: [{hwnd}]")
+            self._start_tracking_window(hwnd)
 
     def _get_display_by_window_handle(self, hwnd):
         if hwnd not in self.tracked_window_handles:
             return None
 
         for display in self.displays:
-            handles = [w.hwnd for w in self.display_window_map[str(display.hwnd)]]
-            if hwnd in handles:
+            if display.contains_window(hwnd):
                 return display
+        return None
 
     def _get_tracked_window_by_handle(self, hwnd):
         if hwnd not in self.tracked_window_handles:
@@ -130,8 +183,6 @@ class WindowManager(object):
         try:
             # check styles
             style = win32.GetWindowStyles(hwnd)
-            #if not style & win32con.WS_OVERLAPPED:
-            #    return False
             popup = bool(style & win32con.WS_POPUP)
             visible = bool(style & win32con.WS_VISIBLE)
             maxbox = bool(style & win32con.WS_MAXIMIZEBOX)
