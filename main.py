@@ -7,10 +7,12 @@ import wimpy.config as config
 
 from wimpy.WimpyTaskBarIcon import WimpyTaskBarIcon
 from wimpy.BSPTilingStrategy import BSPTilingStrategy
+from wimpy.WinEventHandler import WinEventHandler
+from wimpy.WindowManager import WindowManager
 from wimpy.DisplayManager import DisplayManager
 
 PROGRAM_NAME = "wimpy"
-TRAY_ICON_PATH = os.path.join(os.getcwd(), "icon", "icon.ico")
+TRAY_ICON_PATH = os.path.join(os.getcwd(), "icon", "wimpy_04_32x32.png")
 CONFIG_FILENAME = "config.ini"
 
 def configure():
@@ -21,13 +23,14 @@ def main():
 	configure()
 
 	strategy = BSPTilingStrategy()
-	display_manager = DisplayManager(strategy)
+	window_manager = WindowManager(strategy)
+	event_handler = WinEventHandler()
 
 	app = wx.App()
-	taskbar = WimpyTaskBarIcon(PROGRAM_NAME, TRAY_ICON_PATH, display_manager)
-	display_manager.start_event_hook()
+	taskbar = WimpyTaskBarIcon(PROGRAM_NAME, TRAY_ICON_PATH, window_manager)
+	event_handler.start_hook(window_manager.on_event, window_manager.on_error)
 	app.MainLoop()
-	display_manager.stop_event_hook()
+	event_handler.stop_hook()
 	sys.exit(0)
 
 if __name__ == "__main__":

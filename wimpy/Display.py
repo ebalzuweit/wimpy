@@ -10,6 +10,7 @@ class Display(object):
     def __init__(self, hwnd):
         self.hwnd = hwnd
         self._cache_properties()
+        self.windows = []
 
     def __eq__(self, value):
         return int(self.hwnd) == int(value.hwnd)
@@ -35,13 +36,4 @@ class Display(object):
     def contains_window(self, window_hwnd):
         hwnd = win32api.MonitorFromWindow(window_hwnd, win32con.MONITOR_DEFAULTTONEAREST)
         return hwnd == self.hwnd
-
-    @staticmethod
-    def enumerate():
-        displays = []
-        for hwnd, _, _ in win32api.EnumDisplayMonitors():
-            displays.append(Display(hwnd))
-
-        logging.debug(f"Display enumerate found {len(displays)} display(s).")
-        return displays
 
