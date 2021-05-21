@@ -71,12 +71,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="config.ini" />
-    <Content Include="icon\icon.ico" />
-    <Content Include="icon\wimpy_01.png" />
-    <Content Include="icon\wimpy_02.png" />
-    <Content Include="icon\wimpy_03.png" />
-    <Content Include="icon\wimpy_03_32x32.png" />
-    <Content Include="icon\wimpy_03_64x64.png" />
     <Content Include="icon\wimpy_04_32x32.png" />
     <Content Include="README.md" />
     <Content Include="requirements.txt" />
