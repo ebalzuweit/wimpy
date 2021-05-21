@@ -11,7 +11,8 @@
     <OutputPath>.</OutputPath>
     <Name>wimpy</Name>
     <RootNamespace>wimpy</RootNamespace>
-    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>MSBuild|env3.9|$(MSBuildProjectFullPath)</InterpreterId>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +23,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="setup.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="wimpy\BSPTilingStrategy.py">
       <SubType>Code</SubType>
     </Compile>
@@ -55,6 +59,15 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Interpreter Include="env3.9\">
+      <Id>env3.9</Id>
+      <Version>3.9</Version>
+      <Description>env3.9 (Python 3.9 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
     <Interpreter Include="env\">
       <Id>env</Id>
       <Version>3.7</Version>
@@ -71,7 +84,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="config.ini" />
-    <Content Include="icon\wimpy_04_32x32.png" />
+    <Content Include="icon\icon.ico" />
+    <Content Include="make.bat" />
     <Content Include="README.md" />
     <Content Include="requirements.txt" />
   </ItemGroup>

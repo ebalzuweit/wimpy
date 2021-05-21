@@ -12,7 +12,7 @@ from wimpy.WindowManager import WindowManager
 from wimpy.DisplayManager import DisplayManager
 
 PROGRAM_NAME = "wimpy"
-TRAY_ICON_PATH = os.path.join(os.getcwd(), "icon", "wimpy_04_32x32.png")
+TRAY_ICON_PATH = os.path.join(os.getcwd(), "icon", "icon.ico")
 CONFIG_FILENAME = "config.ini"
 
 def configure():

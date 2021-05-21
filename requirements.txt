@@ -5,3 +5,8 @@ pywin32==300
 setuptools==47.1.0
 six==1.16.0
 wxPython==4.1.1
+cx-Freeze==6.6
+cx-Logging==3.0
+importlib-metadata==4.0.1
+typing-extensions==3.10.0.0
+zipp==3.4.1
