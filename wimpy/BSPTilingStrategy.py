@@ -5,6 +5,7 @@ import wimpy.config as config
 from wimpy.Display import Display
 from wimpy.WindowManagementStrategy import *
 
+
 class BSPTilingStrategy(WindowManagementStrategy):
     """description of class"""
 
@@ -17,7 +18,9 @@ class BSPTilingStrategy(WindowManagementStrategy):
         self._partition_display(display, notopmost_windows, active_hwnd)
 
     def _partition_display(self, display, windows, active_hwnd):
-        display_size = inset_size(display.display_size, config.display_padding())
+        display_size = inset_size(
+            display.display_size, config.display_padding())
+        logging.debug(f"partitioning display: {display}")
         self._recursive_partition(display_size, windows, active_hwnd)
 
     def _recursive_partition(self, display_size, windows, active_hwnd):
@@ -32,16 +35,19 @@ class BSPTilingStrategy(WindowManagementStrategy):
             right = []
 
             # sort window order for placement (by largest preference)
-            windows.sort(key=lambda w: abs(self._get_partition_preference(w.display_size, left_size, right_size)), reverse=True)
+            windows.sort(key=lambda w: abs(self._get_partition_preference(
+                w.display_size, left_size, right_size)), reverse=True)
 
             # assign windows to their preferred partition (if would not unbalance)
-            max_windows = len(windows) // 2 + 1 if (len(windows) % 2 == 1) else len(windows) // 2
+            max_windows = len(windows) // 2 + 1 if (len(windows) %
+                                                    2 == 1) else len(windows) // 2
             for window in windows:
-                pref = self._get_partition_preference(window.display_size, left_size, right_size)
+                pref = self._get_partition_preference(
+                    window.display_size, left_size, right_size)
                 pref_text = "LEFT" if pref <= 0 else "RIGHT"
                 if pref == 0:
                     pref_text = "NONE"
-                if pref <= 0: # tiebreak prefers left
+                if pref <= 0:  # tiebreak prefers left
                     if len(left) < max_windows:
                         left.append(window)
                     else:
@@ -68,6 +74,7 @@ class BSPTilingStrategy(WindowManagementStrategy):
 
     def _move_window(self, window, size):
         window_size = inset_size(size, config.window_margin())
+        logging.debug(f"[{window.hwnd}] move_to: {window_size}")
         window.move_to(window_size)
 
     def _display_area(self, size):
@@ -83,4 +90,3 @@ class BSPTilingStrategy(WindowManagementStrategy):
             return [(l, t, l + hw, b), (l + hw, t, r, b)]
         else:
             return [(l, t, r, t + hh), (l, t + hh, r, b)]
-            

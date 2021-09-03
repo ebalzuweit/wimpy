@@ -9,7 +9,6 @@ from wimpy.WimpyTaskBarIcon import WimpyTaskBarIcon
 from wimpy.BSPTilingStrategy import BSPTilingStrategy
 from wimpy.WinEventHandler import WinEventHandler
 from wimpy.WindowManager import WindowManager
-from wimpy.DisplayManager import DisplayManager
 
 PROGRAM_NAME = "wimpy"
 TRAY_ICON_PATH = os.path.join(os.getcwd(), "icon", "icon.ico")

@@ -48,10 +48,10 @@
     <Compile Include="wimpy\WindowManagementStrategy.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="wimpy\DisplayManager.py">
+    <Compile Include="wimpy\WindowManager.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="wimpy\WindowManager.py">
+    <Compile Include="wimpy\WindowTracker.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="wimpy\WinEventHandler.py">
