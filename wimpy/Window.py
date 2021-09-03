@@ -4,6 +4,7 @@ import win32gui
 
 import wimpy.win32 as win32
 
+
 class Window(object):
     """Represents a single window"""
 
@@ -19,7 +20,8 @@ class Window(object):
         return self.move_to(self.initial_size)
 
     def move_to(self, window_size):
-        logging.debug(f"move_to: {self.pretty_title} [{int(self.hwnd)}]\t{self.display_size} -> {window_size}")
+        logging.debug(
+            f"move_to: {self.pretty_title} [{int(self.hwnd)}]\t{self.display_size} -> {window_size}")
         l, t, r, b = window_size
         win32.MoveWindow(self.hwnd, l, t, r - l, b - t, True)
         self.display_size = window_size
@@ -29,7 +31,8 @@ class Window(object):
             return False
 
         l, t, r, b = self.display_size
-        win32.SetWindowPos(self.hwnd, win32con.HWND_TOPMOST if topmost else win32con.HWND_NOTOPMOST, l, t, r - l, b - t, 0)
+        win32.SetWindowPos(
+            self.hwnd, win32con.HWND_TOPMOST if topmost else win32con.HWND_NOTOPMOST, l, t, r - l, b - t, 0)
         self.topmost = topmost
         return True
 

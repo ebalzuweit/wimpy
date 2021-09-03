@@ -4,6 +4,7 @@ import win32con
 
 from wimpy.Window import Window
 
+
 class Display(object):
     """Represents a single display"""
 
@@ -30,10 +31,11 @@ class Display(object):
         return win32api.GetMonitorInfo(self.hwnd)["Work"]
 
     def _is_primary_display(self):
-        primary_hwnd = win32api.MonitorFromPoint((0, 0), win32con.MONITOR_DEFAULTTOPRIMARY)
+        primary_hwnd = win32api.MonitorFromPoint(
+            (0, 0), win32con.MONITOR_DEFAULTTOPRIMARY)
         return primary_hwnd == self.hwnd
 
     def contains_window(self, window_hwnd):
-        hwnd = win32api.MonitorFromWindow(window_hwnd, win32con.MONITOR_DEFAULTTONEAREST)
+        hwnd = win32api.MonitorFromWindow(
+            window_hwnd, win32con.MONITOR_DEFAULTTONEAREST)
         return hwnd == self.hwnd
-

@@ -2,6 +2,7 @@ import os
 import wx
 import wx.adv
 
+
 class WimpyTaskBarIcon(wx.adv.TaskBarIcon):
     """TaskBarIcon for wimpy"""
 
@@ -28,16 +29,18 @@ class WimpyTaskBarIcon(wx.adv.TaskBarIcon):
         # refresh
         refresh_item = menu.Append(wx.NewIdRef(), "Refresh")
         self.Bind(wx.EVT_MENU, self._refresh, refresh_item)
-        
+
         menu.AppendSeparator()
 
         # window toggles
         for window in self.window_manager.windows:
             raw_label = str(window)
-            label = raw_label if len(raw_label) < 42 else raw_label[:39] + "..."
+            label = raw_label if len(
+                raw_label) < 42 else raw_label[:39] + "..."
             window_item = menu.AppendCheckItem(wx.NewIdRef(), label)
             window_item.Check(window.topmost)
-            self.Bind(wx.EVT_MENU, self._on_window_click, id=window_item.GetId())
+            self.Bind(wx.EVT_MENU, self._on_window_click,
+                      id=window_item.GetId())
             self.window_mapping[window_item.GetId()] = window
 
         menu.AppendSeparator()
@@ -47,7 +50,7 @@ class WimpyTaskBarIcon(wx.adv.TaskBarIcon):
         self.Bind(wx.EVT_MENU, self._exit, exit_item)
 
         return menu
-    
+
     def _set_icon(self, path, tooltip):
         icon = wx.Icon()
         icon.LoadFile(path)

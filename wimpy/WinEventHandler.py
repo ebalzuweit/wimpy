@@ -4,6 +4,7 @@ import logging
 import threading
 import win32con
 
+
 class WinEventHandler(object):
     """description of class"""
 
@@ -31,7 +32,8 @@ class WinEventHandler(object):
         user32.SetWinEventHook.restype = ctypes.wintypes.HANDLE
         user32.SetWinEventHook.errcheck = err_callback
 
-        self.thread = threading.Thread(target=self._message_loop, args=(user32, ole32))
+        self.thread = threading.Thread(
+            target=self._message_loop, args=(user32, ole32))
         logging.debug(f"Starting message loop thread ({self.thread}).")
         self.thread.start()
 
@@ -39,7 +41,8 @@ class WinEventHandler(object):
         """ends Windows event hook thread"""
         if self.thread is not None:
             logging.debug("Stopping message loop")
-            ctypes.windll.user32.PostThreadMessageW(self.thread.ident, win32con.WM_QUIT, 0, 0)
+            ctypes.windll.user32.PostThreadMessageW(
+                self.thread.ident, win32con.WM_QUIT, 0, 0)
             self.thread = None
 
     def _message_loop(self, user32, ole32):
@@ -52,7 +55,8 @@ class WinEventHandler(object):
             0,
             0,
             win32con.WINEVENT_OUTOFCONTEXT | win32con.WINEVENT_SKIPOWNPROCESS)
-        if hook == 0: raise RuntimeError("Failed to set hook!")
+        if hook == 0:
+            raise RuntimeError("Failed to set hook!")
 
         # message loop
         message = ctypes.wintypes.MSG()
