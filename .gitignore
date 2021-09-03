@@ -369,3 +369,7 @@ env*/
 
 # Log files
 log.txt
+
+# Visual Studio
+*.pyproj
+*.sln
