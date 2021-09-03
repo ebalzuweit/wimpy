@@ -9,6 +9,8 @@ import wimpy.config as config
 from wimpy.WimpyTaskBarIcon import WimpyTaskBarIcon
 from wimpy.WindowManagementStrategy import WindowManagementStrategy
 from wimpy.BSPTilingStrategy import BSPTilingStrategy
+from wimpy.WindowTracker import WindowTracker
+from wimpy.DebugWindowTracker import DebugWindowTracker
 from wimpy.WinEventHandler import WinEventHandler
 from wimpy.WindowManager import WindowManager
 
@@ -37,10 +39,14 @@ def main():
 
     configure()
 
-    strategy = BSPTilingStrategy()
     if args.debug:
+        tracker = DebugWindowTracker()
         strategy = WindowManagementStrategy()
-    window_manager = WindowManager(strategy)
+    else:
+        tracker = WindowTracker()
+        strategy = BSPTilingStrategy()
+
+    window_manager = WindowManager(tracker, strategy)
     event_handler = WinEventHandler()
 
     app = wx.App()

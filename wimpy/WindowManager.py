@@ -8,15 +8,19 @@ import wimpy.win32 as win32
 
 from wimpy.Display import Display
 from wimpy.Window import Window
-from wimpy.WindowTracker import WindowTracker
 
 
 class WindowManager(object):
     """description of class"""
 
-    def __init__(self, strategy):
+    def __init__(self, tracker, strategy):
+        logging.info(f"Using tracker '{type(tracker).__name__}'.")
+        self.window_tracker = tracker
+        self.window_tracker.refresh()
+
         logging.info(f"Using strategy '{type(strategy).__name__}'.")
         self.strategy = strategy
+
         self.MESSAGE_MAP = {
             win32con.EVENT_OBJECT_CREATE: self._on_object_create,
             win32con.EVENT_OBJECT_DESTROY: self._on_object_destroy,
@@ -28,10 +32,6 @@ class WindowManager(object):
             win32con.EVENT_SYSTEM_MINIMIZESTART: self._on_minimize_start,
             win32con.EVENT_SYSTEM_MINIMIZEEND: self._on_minimize_end
         }
-
-        self.window_tracker = WindowTracker()
-        self.window_tracker.refresh()
-
         self.displays = []
         self.windows = []  # TODO: move this inside WindowTracker
         self.movesize_window_handle = None
@@ -59,7 +59,7 @@ class WindowManager(object):
 
     def toggle_window_topmost(self, window):
         window.set_topmost(not window.topmost)
-        self._apply_strategy_to_display_window_handle(window.hwnd)
+        self._apply_strategy_to_display_by_window(window.hwnd)
 
     def refresh(self):
         self._update_tracked_windows(0, 0)
