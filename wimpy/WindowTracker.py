@@ -40,11 +40,12 @@ class WindowTracker(object):
         try:
             # check styles
             style = win32.GetWindowStyles(hwnd)
+            caption = bool(style & win32con.WS_CAPTION)
             popup = bool(style & win32con.WS_POPUP)
             visible = bool(style & win32con.WS_VISIBLE)
             maxbox = bool(style & win32con.WS_MAXIMIZEBOX)
             minbox = bool(style & win32con.WS_MINIMIZEBOX)
-            if popup or not maxbox or not minbox:
+            if not caption or popup or not maxbox or not minbox:
                 return False
 
             # check visibility
@@ -66,9 +67,15 @@ class WindowTracker(object):
                 return False
 
             logging.info(
-                f"[{hwnd}] should_track_handle - popup:{popup}, visible:{visible}, maxbox:{maxbox}, minbox:{minbox}")
+                f"[{hwnd}] {classname} - caption:{caption} popup:{popup}, visible:{visible}, maxbox:{maxbox}, minbox:{minbox}")
+            self._print_window_styles(hwnd)
             return True
         except:
             logging.error(
                 f"[{hwnd}] Error in should_track_handle:", exc_info=True)
             return False
+
+    def _print_window_styles(self, hwnd):
+        style_map = win32.GetWindowStyleMap(hwnd)
+        for key, val in style_map.items():
+            logging.debug(f"{key}: {val}")
