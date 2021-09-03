@@ -37,15 +37,19 @@ class WindowTracker(object):
         return False
 
     def should_track_handle(self, hwnd):
+
         try:
             # check styles
             style = win32.GetWindowStyles(hwnd)
             caption = bool(style & win32con.WS_CAPTION)
+            clip_children = bool(style & win32con.WS_CLIPCHILDREN)
             popup = bool(style & win32con.WS_POPUP)
             visible = bool(style & win32con.WS_VISIBLE)
             maxbox = bool(style & win32con.WS_MAXIMIZEBOX)
             minbox = bool(style & win32con.WS_MINIMIZEBOX)
-            if not caption or popup or not maxbox or not minbox:
+            if not caption or not maxbox or not minbox:
+                return False
+            if not clip_children and popup:
                 return False
 
             # check visibility
@@ -66,16 +70,8 @@ class WindowTracker(object):
             if classname in config.ignored_classnames():
                 return False
 
-            logging.info(
-                f"[{hwnd}] {classname} - caption:{caption} popup:{popup}, visible:{visible}, maxbox:{maxbox}, minbox:{minbox}")
-            self._print_window_styles(hwnd)
             return True
         except:
             logging.error(
                 f"[{hwnd}] Error in should_track_handle:", exc_info=True)
             return False
-
-    def _print_window_styles(self, hwnd):
-        style_map = win32.GetWindowStyleMap(hwnd)
-        for key, val in style_map.items():
-            logging.debug(f"{key}: {val}")
