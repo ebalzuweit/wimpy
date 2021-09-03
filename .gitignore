@@ -366,3 +366,6 @@ FodyWeavers.xsd
 
 # Python virtual environments
 env*/
+
+# Log files
+log.txt
